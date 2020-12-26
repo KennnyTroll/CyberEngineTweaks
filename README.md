@@ -1,10 +1,5 @@
 # Cyber Engine Tweaks Inject(Update)
 
-1: Update to have files outside the game
-cyber_engine_tweaks.asi maybe uninjected and injected many times
-deinjected = NumPad -
-2: Control the interface with the joystick and the keyboard
-
 [![Patreon](https://img.shields.io/badge/Patreon-donate-purple.svg)](https://www.patreon.com/tiltedphoques)
 
 ## Cyber Engine Tweaks what's this?
@@ -15,7 +10,7 @@ Works with 1.04, 1.05 and 1.06.
 
 ## What's the Cyber Engine Tweaks Inject(Update)?
 
-Is same like Cyber Engine Tweaks V1.70 but Injectable & UnInjectable
+Is same like Cyber Engine Tweaks V1.70 but Injectable & UnInjectable.
 
 1: Update to have files outside the game cyber_engine_tweaks.asi maybe uninjected and injected many times
 Without restarting the game (Very useful for development)
