@@ -24,7 +24,7 @@ You can change it in config.json
 
 2: Added basic interface controller with keyboard and Gamepad
 
-3: Added console style auto save (look in cyber_engine_tweaks.log file fore mor info)
+3: Added console style auto save (look in cyber_engine_tweaks.log file for more info)
 
 enjoy !!
 
