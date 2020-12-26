@@ -1,12 +1,37 @@
-# Cyber Engine Tweaks
+# Cyber Engine Tweaks Inject(Update)
+
+1: Update to have files outside the game
+cyber_engine_tweaks.asi maybe uninjected and injected many times
+deinjected = NumPad -
+2: Control the interface with the joystick and the keyboard
 
 [![Patreon](https://img.shields.io/badge/Patreon-donate-purple.svg)](https://www.patreon.com/tiltedphoques)
 
-## What's this?
+## Cyber Engine Tweaks what's this?
 
 This plugin fixes some Cyberpunk 2077 issues and adds some features.
 
 Works with 1.04, 1.05 and 1.06.
+
+## What's the Cyber Engine Tweaks Inject(Update)?
+
+Is same like Cyber Engine Tweaks V1.70 but Injectable & UnInjectable
+
+1: Update to have files outside the game cyber_engine_tweaks.asi maybe uninjected and injected many times
+Without restarting the game (Very useful for development)
+
+Create a folder named whatever you want 
+Paste your files in As if it was the game directories
+Inject with your favorite injector
+
+Uninject KEY is -
+You can change it in config.json
+
+2: Added basic interface controller with keyboard and Gamepad
+
+3: Added console style auto save (look in cyber_engine_tweaks.log file fore mor info)
+
+enjoy !!
 
 ### Current fixes
 
