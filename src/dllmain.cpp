@@ -53,22 +53,29 @@ void Initialize_logger_path(HMODULE aModule)
 
 unsigned long __stdcall  Initialize(HMODULE mod)
 {
+    //Initialize logger path && get ExeName
     Initialize_logger_path(mod);
 
+    //Initialize logger
     auto rotatingLogger = std::make_shared<spdlog::sinks::rotating_file_sink_mt>((Options::Path / "cyber_engine_tweaks.log").string(), 1048576 * 5, 3);
     auto logger = std::make_shared<spdlog::logger>("", spdlog::sinks_init_list{ rotatingLogger });
     logger->flush_on(spdlog::level::debug);
     set_default_logger(logger);
     spdlog::info("logger_init_Ok");
 
+    //MH_Initialize
     MH_Initialize();
     spdlog::info("MH_Initialize");
 
+    //Get Version && base_address && Load config files");
     Options::Initialize(mod);
     auto& options = Options::Get();
 
+    //Verifi exe name == "Cyberpunk2077.exe"
     if (!options.IsCyberpunk2077())
         return true;
+
+#pragma region Patch
 
     if(options.PatchSMT)
         SmtAmdPatch(&options.GameImage);
@@ -103,15 +110,23 @@ unsigned long __stdcall  Initialize(HMODULE mod)
     if (options.PatchDisableBoundaryTeleport)
         DisableBoundaryTeleportPatch(&options.GameImage);
 
+#pragma endregion
+
+    //Init fonctions Hook
     OptionsInitHook(&options.GameImage);
 
+    //Get som adresses
+    spdlog::info("------>  Overlay::Initialize(Image* apImage)  <------");
     if(options.Console)
         Overlay::Initialize(&options.GameImage);
+    spdlog::info("------>  Overlay::Initialize(Image* apImage)  <------ OK");
 
+    //Enable ALL Hook
     MH_EnableHook(MH_ALL_HOOKS);
 
     if (options.Console)
     {
+        //Enable Console on injection 
         Overlay::Get().m_enabled = true;
         std::thread t([]()
             {
@@ -122,12 +137,16 @@ unsigned long __stdcall  Initialize(HMODULE mod)
                 }
                 else
                     Overlay::Get().Hook();
+
+                spdlog::error("Overlay Hook OK");
+
             });
         t.detach();
     }
 
     spdlog::default_logger()->flush();
 
+    //wait to shutdown
     do {
         Sleep(100);
     } while (!Options::Get().Uninject == true);

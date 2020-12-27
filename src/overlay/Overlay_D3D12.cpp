@@ -76,6 +76,9 @@ void Overlay::InitializeD3D12(IDXGISwapChain3* pSwapChain)
         // Enable Gamepad Controls
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
+        // Enable Set Mouse Pos
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableSetMousePos;
+
         DXGI_SWAP_CHAIN_DESC sdesc;
         pSwapChain->GetDesc(&sdesc);
 
@@ -136,37 +139,40 @@ void Overlay::InitializeD3D12(IDXGISwapChain3* pSwapChain)
 
 void Overlay::Render(IDXGISwapChain3* pSwapChain)
 {
-    if (!IsEnabled())
-        return;
+    //if (!IsEnabled())
+    //    return;
 
-    DrawImgui(pSwapChain);
+    if (m_Imgui_Demo || m_enabled)
+    {
+        DrawImgui(pSwapChain);
 
-    const auto bufferIndex = pSwapChain->GetCurrentBackBufferIndex();
+        const auto bufferIndex = pSwapChain->GetCurrentBackBufferIndex();
 
-    auto& currentFrameContext = m_frameContexts[bufferIndex];
-    currentFrameContext.CommandAllocator->Reset();
+        auto& currentFrameContext = m_frameContexts[bufferIndex];
+        currentFrameContext.CommandAllocator->Reset();
 
-    D3D12_RESOURCE_BARRIER barrier;
-    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    barrier.Transition.pResource = currentFrameContext.BackBuffer;
-    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        D3D12_RESOURCE_BARRIER barrier;
+        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        barrier.Transition.pResource = currentFrameContext.BackBuffer;
+        barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
-    m_pd3dCommandList->Reset(currentFrameContext.CommandAllocator, nullptr);
-    m_pd3dCommandList->ResourceBarrier(1, &barrier);
-    m_pd3dCommandList->OMSetRenderTargets(1, &currentFrameContext.MainRenderTargetDescriptor, FALSE, nullptr);
-    m_pd3dCommandList->SetDescriptorHeaps(1, &m_pd3dSrvDescHeap);
+        m_pd3dCommandList->Reset(currentFrameContext.CommandAllocator, nullptr);
+        m_pd3dCommandList->ResourceBarrier(1, &barrier);
+        m_pd3dCommandList->OMSetRenderTargets(1, &currentFrameContext.MainRenderTargetDescriptor, FALSE, nullptr);
+        m_pd3dCommandList->SetDescriptorHeaps(1, &m_pd3dSrvDescHeap);
 
-    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_pd3dCommandList);
+        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_pd3dCommandList);
 
-    barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+        barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-    m_pd3dCommandList->ResourceBarrier(1, &barrier);
-    m_pd3dCommandList->Close();
+        m_pd3dCommandList->ResourceBarrier(1, &barrier);
+        m_pd3dCommandList->Close();
 
-    m_pCommandQueue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList**>(&m_pd3dCommandList));
+        m_pCommandQueue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList**>(&m_pd3dCommandList));
+    }
 }
 

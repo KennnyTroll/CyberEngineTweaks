@@ -15,7 +15,7 @@ BOOL Overlay::ClipToCenter(CGameEngine::UnkC0* apThis)
     const HWND wnd = apThis->Wnd;
     const HWND foreground = GetForegroundWindow();
 
-    if (wnd == foreground && apThis->unk164 && !apThis->unk140 && !Get().IsEnabled())
+    if ((wnd == foreground) && (apThis->unk164) && (!apThis->unk140) && (!Get().IsEnabled()) && (!Overlay::Get().m_Imgui_Demo))
     {
         RECT rect;
         GetClientRect(wnd, &rect);
@@ -45,6 +45,7 @@ void Overlay::EarlyHooks(Image* apImage)
         0x48, 0x89, 0x5C, 0x24, 0x08, 0x57, 0x48, 0x83, 0xEC, 0x30, 0x48, 0x8B,
         0x99, 0x68, 0x01, 0x00, 0x00, 0x48, 0x8B, 0xF9, 0xFF });
 
+    spdlog::info("ClipToCenter 0x{0:X}", (uintptr_t)pLocation);
     if (pLocation)
     {
         if (MH_CreateHook(pLocation, &ClipToCenter, reinterpret_cast<void**>(&m_realClipToCenter)) != MH_OK || MH_EnableHook(pLocation) != MH_OK)
@@ -60,7 +61,7 @@ void Overlay::EarlyHooks(Image* apImage)
         0xDA, 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x48, 0x8B,
         0xD0, 0x48, 0x8D, 0x4C, 0x24, 0x20
     });
-
+    spdlog::info("HookLog 0x{0:X}", (uintptr_t)pLocation);
     if(pLocation)
     {
         if (MH_CreateHook(pLocation, &HookLog, reinterpret_cast<void**>(&m_realLog)) != MH_OK || MH_EnableHook(pLocation) != MH_OK)
@@ -83,7 +84,7 @@ void Overlay::EarlyHooks(Image* apImage)
         0x4A, 0x40, 0xFF, 0x14, 0xC7, 0xE8, 0xCC, 0xCC,
         0xCC, 0xCC, 0x48, 0x8B, 0xD0
         });
-
+    spdlog::info("HookLogChannel 0x{0:X}", (uintptr_t)pLocation);
     if (pLocation)
     {
         if (MH_CreateHook(pLocation, &HookLogChannel, reinterpret_cast<void**>(&m_realLogChannel)) != MH_OK || MH_EnableHook(pLocation) != MH_OK)
@@ -99,7 +100,7 @@ void Overlay::EarlyHooks(Image* apImage)
         0x24, 0x10, 0x57, 0x48, 0x83, 0xEC, 0x40, 0x80,
         0x3A, 0x00, 0x48, 0x8B, 0xFA
         });
-
+    spdlog::info("HookTDBIDCtor 0x{0:X}", (uintptr_t)pLocation);
     if (pLocation)
     {
         if (MH_CreateHook(pLocation, &HookTDBIDCtor, reinterpret_cast<void**>(&m_realTDBIDCtor)) != MH_OK || MH_EnableHook(pLocation) != MH_OK)
@@ -116,7 +117,7 @@ void Overlay::EarlyHooks(Image* apImage)
         0x8B, 0xF1, 0x48, 0x8B, 0xDA, 0x48, 0x8B, 0xCA,
         0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x48, 0x8B, 0xCB
         });
-
+    spdlog::info("HookTDBIDCtorCString 0x{0:X}", (uintptr_t)pLocation);
     if (pLocation)
     {
         if (MH_CreateHook(pLocation, &HookTDBIDCtorCString, reinterpret_cast<void**>(&m_realTDBIDCtorCString)) != MH_OK || MH_EnableHook(pLocation) != MH_OK)
@@ -133,7 +134,7 @@ void Overlay::EarlyHooks(Image* apImage)
         0xC0, 0x4D, 0x8B, 0xC8, 0x48, 0x8B, 0xF2, 0x4D,
         0x85, 0xC0, 0x74, 0x0F, 0x41, 0x38, 0x00,
         });
-
+    spdlog::info("HookTDBIDCtorDerive 0x{0:X}", (uintptr_t)pLocation);
     if (pLocation)
     {
         if (MH_CreateHook(pLocation, &HookTDBIDCtorDerive, reinterpret_cast<void**>(&m_realTDBIDCtorDerive)) != MH_OK || MH_EnableHook(pLocation) != MH_OK)
@@ -150,7 +151,7 @@ void Overlay::EarlyHooks(Image* apImage)
         0x8B, 0xF9, 0x48, 0x8D, 0x54, 0x24, 0x20, 0x48,
         0x8D, 0x4C, 0x24, 0x68, 0xE8
         });
-
+    spdlog::info("HookTDBIDCtorUnknown 0x{0:X}", (uintptr_t)pLocation);
     if (pLocation)
     {
         if (MH_CreateHook(pLocation, &HookTDBIDCtorUnknown, reinterpret_cast<void**>(&m_realTDBIDCtorUnknown)) != MH_OK || MH_EnableHook(pLocation) != MH_OK)
@@ -172,15 +173,17 @@ void Overlay::EarlyHooks(Image* apImage)
         0xCC, 0x01, 0x41, 0x8B, 0x06, 0x39, 0x05, 0xCC,
         0xCC, 0xCC, 0xCC, 0x7F
         });
-
+    spdlog::info("HookTDBIDToStringDEBUG 1 0x{0:X}", (uintptr_t)pLocation);
     if (pLocation)
     {
         pLocation = &pLocation[45] + static_cast<int8_t>(pLocation[44]);
+        spdlog::info("HookTDBIDToStringDEBUG 2 0x{0:X}", (uintptr_t)pLocation);
         pLocation = FindSignature(pLocation, pLocation + 45, {
             0x48, 0x8D, 0x0D, 0xCC, 0xCC, 0xCC, 0xCC, 0xE8,
             0xCC, 0xCC, 0xCC, 0xCC, 0x83, 0x3D, 0xCC, 0xCC,
             0xCC, 0xCC, 0xFF, 0x75, 0xCC, 0x48, 0x8D, 0x05,
             });
+        spdlog::info("HookTDBIDToStringDEBUG 3 0x{0:X}", (uintptr_t)pLocation);
         if (pLocation)
         {
             pLocation = &pLocation[28] + *reinterpret_cast<int32_t*>(&pLocation[24]);

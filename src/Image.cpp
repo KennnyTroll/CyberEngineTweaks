@@ -18,27 +18,37 @@ void Image::Initialize()
     static uint8_t s_Guid106[] = { 0x67, 0xFB, 0x96, 0x6B, 0xAA, 0x3D, 0x57, 0x4E, 0x93, 0x8F, 0x1C, 0xC5, 0x85, 0xc6, 0xF5, 0x29 };
 
     auto* pImage = GetModuleHandleA(nullptr);
+    spdlog::info("(uintptr_t)pImage = GetModuleHandleA(nullptr) ......... {0:x}   {0:d}", (uintptr_t)pImage);
     IMAGE_NT_HEADERS* pHeader = ImageNtHeader(pImage);
     auto* pSectionHeaders = reinterpret_cast<IMAGE_SECTION_HEADER*>(pHeader + 1);
 
     base_address = reinterpret_cast<uintptr_t>(pImage);
+    spdlog::info("----->   base_address = reinterpret_cast<uintptr_t>(pImage) ......... 0x{0:x}", (uintptr_t)base_address);
+
 
     for (auto count = 0u; count < pHeader->FileHeader.NumberOfSections; ++count)
     {
         if (memcmp(pSectionHeaders->Name, ".text", 5) == 0)
         {
             pTextStart = reinterpret_cast<uint8_t*>(base_address + pSectionHeaders->VirtualAddress);
+            spdlog::info("----->   pTextStart ... 0x{0:x}", (uintptr_t)pTextStart);
             pTextEnd = reinterpret_cast<uint8_t*>(base_address + pSectionHeaders->VirtualAddress + pSectionHeaders->Misc.VirtualSize);
+            spdlog::info("----->   pTextEnd ... 0x{0:x}", (uintptr_t)pTextEnd);
         }
 
         ++pSectionHeaders;
     }
 
     auto* pDosHeader = reinterpret_cast<IMAGE_DOS_HEADER*>(base_address);
+    spdlog::info("pDosHeader ... 0x{0:x}", (uintptr_t)pDosHeader);
     auto* pFileHeader = reinterpret_cast<IMAGE_FILE_HEADER*>(base_address + pDosHeader->e_lfanew + 4);
+    spdlog::info("pFileHeader ... 0x{0:x}", (uintptr_t)pFileHeader);
     auto* pOptionalHeader = reinterpret_cast<IMAGE_OPTIONAL_HEADER*>(((char*)pFileHeader) + sizeof(IMAGE_FILE_HEADER));
+    spdlog::info("pOptionalHeader ... 0x{0:x}", (uintptr_t)pOptionalHeader);
     auto* pDataDirectory = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG];
+    spdlog::info("pDataDirectory ... 0x{0:x}", (uintptr_t)pDataDirectory);
     auto* pDebugDirectory = reinterpret_cast<IMAGE_DEBUG_DIRECTORY*>(base_address + pDataDirectory->VirtualAddress);
+    spdlog::info("pDosHeader ... 0x{0:x}", (uintptr_t)pDebugDirectory);
 
     // Check to see that the data has the right type
     if (IMAGE_DEBUG_TYPE_CODEVIEW == pDebugDirectory->Type)
@@ -56,6 +66,8 @@ void Image::Initialize()
             {
                 for (auto c : pdb_info->Guid)
                     spdlog::info("{:X}", (uint32_t)c);
+
+                spdlog::info("--- !!!  Version inconue   !!! ---");
             }
         }
     }

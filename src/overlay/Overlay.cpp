@@ -61,87 +61,105 @@ void Overlay::DrawImgui(IDXGISwapChain3* apSwapChain)
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::SetNextWindowSize(ImVec2(600.f, ImGui::GetFrameHeight() * 15.f + ImGui::GetFrameHeightWithSpacing()), ImGuiCond_FirstUseEver);
-  
-    ImGui::Begin("Cyber Engine Tweaks");
+    if (IsEnabled())
+    {
+#pragma region Cyber Engine Tweaks
 
-    auto [major, minor] = Options::Get().GameImage.GetVersion();
+        ImGui::SetNextWindowSize(ImVec2(600.f, ImGui::GetFrameHeight() * 15.f + ImGui::GetFrameHeightWithSpacing()), ImGuiCond_FirstUseEver);
 
-    if (major == 1 && (minor >= 4 && minor <= 6))
-    { 
-        ImGui::Checkbox("Clear Input", &m_inputClear);
-        ImGui::SameLine();
-        if (ImGui::Button("Clear Output"))
+        ImGui::Begin("Cyber Engine Tweaks");
+
+        auto [major, minor] = Options::Get().GameImage.GetVersion();
+
+        if (major == 1 && (minor >= 4 && minor <= 6))
         {
-            std::lock_guard<std::recursive_mutex> _{ m_outputLock };
-            m_outputLines.clear();
-        }
-        ImGui::SameLine();
-        ImGui::Checkbox("Scroll Output", &m_outputShouldScroll);
-        ImGui::SameLine();
-        if (ImGui::Button("Shut down"))
-            Options::Get().Uninject = true;
-
-        if (ImGui::TreeNode("Config"))
-        {
-            ImGuiIO& io = ImGui::GetIO();
-
-            ImGui::CheckboxFlags("Nav EnableKey board", (unsigned int*)&io.ConfigFlags, ImGuiConfigFlags_NavEnableKeyboard);
-
-            ImGui::CheckboxFlags("Nav Enable Gamepad", (unsigned int*)&io.ConfigFlags, ImGuiConfigFlags_NavEnableGamepad);
-
-            //ImGui::CheckboxFlags("io.ConfigFlags: Nav EnableKey board", &io.ConfigFlags, ImGuiBackendFlags_HasGamepad);
-
-            ImGui::TreePop();
-        }
-
-        static char command[200000] = { 0 };
-
-        {
-            std::lock_guard<std::recursive_mutex> _{ m_outputLock };
-
-            ImVec2 listboxSize = ImGui::GetContentRegionAvail();
-            listboxSize.y -= ImGui::GetFrameHeightWithSpacing();
-            const auto result = ImGui::ListBoxHeader("", listboxSize);
-            for (auto& item : m_outputLines)
-                if (ImGui::Selectable(item.c_str()))
-                {
-                    auto str = item;
-                    if (item[0] == '>' && item[1] == ' ')
-                        str = str.substr(2);
-
-                    std::strncpy(command, str.c_str(), sizeof(command) - 1);
-                }
-
-            if (m_outputScroll)
+            ImGui::Checkbox("Clear Input", &m_inputClear);
+            ImGui::SameLine();
+            if (ImGui::Button("Clear Output"))
             {
-                if (m_outputShouldScroll)
-                    ImGui::SetScrollHereY();
-                m_outputScroll = false;
+                std::lock_guard<std::recursive_mutex> _{ m_outputLock };
+                m_outputLines.clear();
             }
-            if (result)
-                ImGui::ListBoxFooter();
+            ImGui::SameLine();
+            ImGui::Checkbox("Scroll Output", &m_outputShouldScroll);
+            ImGui::SameLine();
+            if (ImGui::Button("Shut down"))
+                Options::Get().Uninject = true;
+            ImGui::SameLine();
+            ImGui::Checkbox("Imgui Demo", &m_Imgui_Demo);
+
+            if (ImGui::TreeNode("Config"))
+            {
+                ImGuiIO& io = ImGui::GetIO();
+
+                ImGui::CheckboxFlags("Nav EnableKey board", (unsigned int*)&io.ConfigFlags, ImGuiConfigFlags_NavEnableKeyboard);
+
+                ImGui::CheckboxFlags("Nav Enable Gamepad", (unsigned int*)&io.ConfigFlags, ImGuiConfigFlags_NavEnableGamepad);
+
+                ImGui::CheckboxFlags("Nav Set Mouse Pos", (unsigned int*)&io.ConfigFlags, ImGuiConfigFlags_NavEnableSetMousePos);
+                
+                io.MouseDrawCursor = true;
+
+                //ImGui::CheckboxFlags("io.ConfigFlags: Nav EnableKey board", &io.ConfigFlags, ImGuiBackendFlags_HasGamepad);
+
+                ImGui::TreePop();
+            }
+
+            static char command[200000] = { 0 };
+
+            {
+                std::lock_guard<std::recursive_mutex> _{ m_outputLock };
+
+                ImVec2 listboxSize = ImGui::GetContentRegionAvail();
+                listboxSize.y -= ImGui::GetFrameHeightWithSpacing();
+                const auto result = ImGui::ListBoxHeader("", listboxSize);
+                for (auto& item : m_outputLines)
+                    if (ImGui::Selectable(item.c_str()))
+                    {
+                        auto str = item;
+                        if (item[0] == '>' && item[1] == ' ')
+                            str = str.substr(2);
+
+                        std::strncpy(command, str.c_str(), sizeof(command) - 1);
+                    }
+
+                if (m_outputScroll)
+                {
+                    if (m_outputShouldScroll)
+                        ImGui::SetScrollHereY();
+                    m_outputScroll = false;
+                }
+                if (result)
+                    ImGui::ListBoxFooter();
+            }
+
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            const auto execute = ImGui::InputText("", command, std::size(command), ImGuiInputTextFlags_EnterReturnsTrue);
+            ImGui::SetItemDefaultFocus();
+            if (execute)
+            {
+                Get().Log(std::string("> ") + command);
+
+                Scripting::Get().ExecuteLua(command);
+
+                if (m_inputClear)
+                    std::memset(command, 0, sizeof(command));
+
+                ImGui::SetKeyboardFocusHere();
+            }
         }
+        else
+            ImGui::Text("Unknown version, please update your game and the mod");
 
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        const auto execute = ImGui::InputText("", command, std::size(command), ImGuiInputTextFlags_EnterReturnsTrue);
-        ImGui::SetItemDefaultFocus();
-        if (execute)
-        {
-            Get().Log(std::string("> ") + command);
+        ImGui::End();
 
-            Scripting::Get().ExecuteLua(command);
-
-            if (m_inputClear)
-                std::memset(command, 0, sizeof(command));
-
-            ImGui::SetKeyboardFocusHere();
-        }
+#pragma endregion
     }
-    else
-        ImGui::Text("Unknown version, please update your game and the mod");
 
-    ImGui::End();
+    if (m_Imgui_Demo)
+    {
+        ImGui::ShowDemoWindow();
+    }
 
     ImGui::Render();
 }
@@ -175,7 +193,7 @@ LRESULT APIENTRY Overlay::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
         break;
     }
 
-    if (s_pOverlay->IsEnabled())
+    if (s_pOverlay->IsEnabled() || s_pOverlay->m_Imgui_Demo)
     {
         if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
             return 1;

@@ -29,7 +29,9 @@ Options& Options::Get()
 
 Options::Options(HMODULE aModule)
 {
+    spdlog::info("------Get Version ------");
     GameImage.Initialize();
+    spdlog::info("------Get Version && base_address Ok ------");
 
     if (GameImage.version)
     {
