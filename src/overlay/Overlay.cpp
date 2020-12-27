@@ -83,10 +83,10 @@ void Overlay::DrawImgui(IDXGISwapChain3* apSwapChain)
             ImGui::SameLine();
             ImGui::Checkbox("Scroll Output", &m_outputShouldScroll);
             ImGui::SameLine();
-            if (ImGui::Button("Shut down"))
-                Options::Get().Uninject = true;
-            ImGui::SameLine();
             ImGui::Checkbox("Imgui Demo", &m_Imgui_Demo);
+            ImGui::SameLine();
+            if (ImGui::Button("Shut down"))
+                Options::Get().Uninject = true; 
 
             if (ImGui::TreeNode("Config"))
             {
@@ -98,7 +98,7 @@ void Overlay::DrawImgui(IDXGISwapChain3* apSwapChain)
 
                 ImGui::CheckboxFlags("Nav Set Mouse Pos", (unsigned int*)&io.ConfigFlags, ImGuiConfigFlags_NavEnableSetMousePos);
                 
-                io.MouseDrawCursor = true;
+                ImGui::Checkbox("io.MouseDrawCursor", &io.MouseDrawCursor);
 
                 //ImGui::CheckboxFlags("io.ConfigFlags: Nav EnableKey board", &io.ConfigFlags, ImGuiBackendFlags_HasGamepad);
 
@@ -410,9 +410,9 @@ void Overlay::Toggle()
 
     while(true)
     {
-        if (m_enabled && ShowCursor(TRUE) >= 0)
+        if ((s_pOverlay->m_Imgui_Demo || m_enabled) && ShowCursor(TRUE) >= 0)
             break;
-        if (!m_enabled && ShowCursor(FALSE) < 0)
+        if ((!s_pOverlay->m_Imgui_Demo && !m_enabled) && ShowCursor(FALSE) < 0)
             break;
     }
 

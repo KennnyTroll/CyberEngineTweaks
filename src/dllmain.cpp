@@ -127,7 +127,8 @@ unsigned long __stdcall  Initialize(HMODULE mod)
     if (options.Console)
     {
         //Enable Console on injection 
-        Overlay::Get().m_enabled = true;
+        //Overlay::Get().m_enabled = true;
+        Overlay::Get().Toggle();
         std::thread t([]()
             {
                 if (kiero::init(kiero::RenderType::D3D12) != kiero::Status::Success)
